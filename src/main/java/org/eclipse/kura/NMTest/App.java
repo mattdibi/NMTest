@@ -1,6 +1,7 @@
 package org.eclipse.kura.NMTest;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
 import org.freedesktop.networkmanager.Settings;
+import org.freedesktop.networkmanager.Settings.NewConnection;
 import org.freedesktop.networkmanager.settings.Connection;
 
 public class App {
@@ -43,15 +45,19 @@ public class App {
                     ipv4Map.put(key, connectionSettings.get("ipv4").get(key));
                 }
 
-                // Update DNS with 8.8.8.8
-                UInt32[] newDNS = { new UInt32(0x08080808) };
-                ipv4Map.put("dns", new Variant<UInt32[]>(newDNS));
-
+                // Update IP address
+                Map<String, Variant<?>> address = new HashMap<>();
+                address.put("address", new Variant<String>("192.168.1.224"));
+                address.put("prefix", new Variant<UInt32>(new UInt32(24)));
+                
+                List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
+                Variant<?> addressDataVariant = new Variant<List<Map<String, Variant<?>>>>(addressData);
+                ipv4Map.put("address-data", addressDataVariant);
+                
+                // Build output data
                 Map<String, Map<String, Variant<?>>> newConnectionSettings = new HashMap<>();
                 newConnectionSettings.put("ipv4", ipv4Map);
                 newConnectionSettings.put("connection", connectionMap);
-
-                System.out.println("DNS: " + newConnectionSettings.get("ipv4").get("dns"));
 
                 // Update & save connection settings
                 connection.Update(newConnectionSettings);
