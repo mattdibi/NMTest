@@ -63,3 +63,15 @@ mvn clean package
 ```bash
 mvn exec:java -Dexec.mainClass="org.eclipse.kura.NMTest.App"
 ```
+
+For testing I’m currently running this code on a Raspberry Pi 4 with Raspberry Pi OS 32 bit using NetworkManager.
+
+_Note_: The [latest release of Raspberry Pi OS](https://www.raspberrypi.com/news/the-latest-update-to-raspberry-pi-os/) now offers Network Manager as an option.
+
+To switch to NetworkManager, just open a terminal window and type:
+
+```bash
+sudo raspi-config
+```
+
+This launches the configuration tool. Go into option 6, Advanced Options, and then into option AA, Network Config – choose option 2, NetworkManager, and then reboot when prompted.
