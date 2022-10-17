@@ -44,15 +44,14 @@ public class App {
                 for (String key : connectionSettings.get("ipv4").keySet()) {
                     ipv4Map.put(key, connectionSettings.get("ipv4").get(key));
                 }
+                
+                System.out.println("ipv4.method: " + ipv4Map.get("method").getSig());
+                System.out.println("ipv4: " + ipv4Map);
 
                 // Update IP address
-                Map<String, Variant<?>> address = new HashMap<>();
-                address.put("address", new Variant<String>("192.168.1.224"));
-                address.put("prefix", new Variant<UInt32>(new UInt32(24)));
-                
-                List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
-                Variant<?> addressDataVariant = new Variant<List<Map<String, Variant<?>>>>(addressData);
-                ipv4Map.put("address-data", addressDataVariant);
+                List<UInt32> address = Arrays.asList(new UInt32(0x7701A8C0), new UInt32(24), new UInt32(0)); // 192.168.1.119
+                ipv4Map.put("addresses", new Variant<>(Arrays.asList(address), "aau"));
+                ipv4Map.put("method", new Variant<String>("manual"));
                 
                 // Build output data
                 Map<String, Map<String, Variant<?>>> newConnectionSettings = new HashMap<>();
