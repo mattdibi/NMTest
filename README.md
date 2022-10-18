@@ -60,6 +60,8 @@ mvn clean package
 
 ## Running
 
+> **Note**: Administration privileges might be required to apply changes on the network configuration. If so, run the following code from the `root` user.
+
 ```bash
 mvn exec:java -Dexec.mainClass="org.eclipse.kura.NMTest.App"
 ```
