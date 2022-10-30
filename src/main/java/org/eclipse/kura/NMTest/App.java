@@ -25,13 +25,13 @@ import org.freedesktop.networkmanager.settings.Connection;
 
 public class App {
     public static void main( String[] args ) throws DBusException {
-        if(args.length < 3) {
+        if(args.length < 2) {
             System.out.println("Usage: <uuid> <auto|static> [address prefix gateway]");
             System.exit(1);
         }
 
-        String method = args[2];
-        if( method == "static" && args.length < 5) {
+        String method = args[1];
+        if( method == "static" && args.length < 4) {
             System.out.println("Usage: <uuid> <static> address prefix [gateway]");
             System.exit(1);
         }
@@ -53,7 +53,7 @@ public class App {
                 Map<String, Map<String, Variant<?>>> connectionSettings = connection.GetSettings();
 
                 // Look for the requested connection UUID
-                if(connectionSettings.get("connection").get("uuid").toString() != args[1]) {
+                if(!connectionSettings.get("connection").get("uuid").getValue().toString().equals(args[0])) {
                     continue;
                 }
 
@@ -78,14 +78,14 @@ public class App {
                 if(method == "manual") {
                     // Add the static IP address, prefix and (optional) gateway
                     Map<String, Variant<?>> address = new HashMap<>();
-                    address.put("address", new Variant<String>(args[3]));
-                    address.put("prefix", new Variant<UInt32>(new UInt32(args[4])));
+                    address.put("address", new Variant<String>(args[2]));
+                    address.put("prefix", new Variant<UInt32>(new UInt32(args[3])));
 
                     List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
                     ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
-                    if(args.length == 6) {
-                        ipv4Map.put("gateway", new Variant<String>(args[5]));
+                    if(args.length == 5) {
+                        ipv4Map.put("gateway", new Variant<String>(args[4]));
                     }
                 }
 
