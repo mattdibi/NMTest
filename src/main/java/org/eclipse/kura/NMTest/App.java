@@ -37,7 +37,7 @@ public class App {
         }
 
         // Convert method to NM method
-        if(method == "static") {
+        if(method.equals("static")) {
             method = "manual";
         }
 
@@ -75,7 +75,7 @@ public class App {
                 // Set the method and change properties
                 ipv4Map.put("method", new Variant<String>(method));
 
-                if(method == "manual") {
+                if(method.equals("manual")) {
                     // Add the static IP address, prefix and (optional) gateway
                     Map<String, Variant<?>> address = new HashMap<>();
                     address.put("address", new Variant<String>(args[2]));
