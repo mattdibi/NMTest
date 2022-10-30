@@ -63,7 +63,7 @@ mvn clean package
 > **Note**: Administration privileges might be required to apply changes on the network configuration. If so, run the following code from the `root` user.
 
 ```bash
-mvn exec:java -Dexec.mainClass="org.eclipse.kura.NMTest.App"
+mvn exec:java -Dexec.mainClass="org.eclipse.kura.NMTest.App" -Dexec.args="<uuid> <auto|static> [address prefix gateway]"
 ```
 
 For testing I’m currently running this code on a Raspberry Pi 4 with Raspberry Pi OS 32 bit using NetworkManager.
