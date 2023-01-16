@@ -77,3 +77,36 @@ sudo raspi-config
 ```
 
 This launches the configuration tool. Go into option 6, Advanced Options, and then into option AA, Network Config – choose option 2, NetworkManager, and then reboot when prompted.
+
+---
+
+### Code generation
+
+> **Note**: For this generation `dbus-java` version 4.2.1 was used.
+
+Follow: [https://hypfvieh.github.io/dbus-java/code-generation.html](https://hypfvieh.github.io/dbus-java/code-generation.html)
+
+Introspection XML for NetworkManager can be found [here](https://github.com/NetworkManager/NetworkManager/tree/main/introspection)
+
+Command used for `NetworkManager` class:
+
+```bash
+mvn exec:java \
+    -Dexec.mainClass="org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator" \
+    -Dexec.executable="java" \
+    -Dexec.args="org.freedesktop.NetworkManager --inputFile /path/to/introspection/org.freedesktop.NetworkManager.xml --outputDir /tmp/classes ' '"
+```
+
+For generating the code of the entire directory all at once, the following script was used.
+
+```bash
+for file in /path/to/introspection/*.xml
+do
+        basefilename=$(basename ${file})
+        filename="${basefilename%.*}"
+        mvn exec:java \
+                -Dexec.mainClass="org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator" \
+                -Dexec.executable="java" \
+                -Dexec.args="${basefilename} --inputFile ${file} --outputDir /tmp/classes ' '"
+done
+```
