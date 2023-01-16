@@ -107,6 +107,6 @@ do
         mvn exec:java \
                 -Dexec.mainClass="org.freedesktop.dbus.utils.generator.InterfaceCodeGenerator" \
                 -Dexec.executable="java" \
-                -Dexec.args="${basefilename} --inputFile ${file} --outputDir /tmp/classes ' '"
+                -Dexec.args="${filename} --inputFile ${file} --outputDir /tmp/classes ' '"
 done
 ```
