@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.freedesktop.dbus.DBusPath;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
@@ -22,10 +23,10 @@ public class App {
                     "/org/freedesktop/NetworkManager/Settings", Settings.class);
 
             // Iterate over connections
-            for (DBusInterface connectionIf : settings.ListConnections()) {
+            for (DBusPath connectionIf : settings.ListConnections()) {
                 // Get /org/freedesktop/NetworkManager/Settings/Connection
                 Connection connection = dbusConn.getRemoteObject("org.freedesktop.NetworkManager",
-                        connectionIf.getObjectPath().toString(), Connection.class);
+                        connectionIf.toString(), Connection.class);
 
                 // Call /org/freedesktop/NetworkManager/Settings/Connection/GetSettings
                 Map<String, Map<String, Variant<?>>> connectionSettings = connection.GetSettings();
