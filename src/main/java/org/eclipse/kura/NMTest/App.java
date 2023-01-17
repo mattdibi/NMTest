@@ -1,33 +1,25 @@
 package org.eclipse.kura.NMTest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.freedesktop.NetworkManager;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class App {
-    private static final String NM_BUS_NAME = "org.freedesktop.NetworkManager";
-    private static final String NM_BUS_PATH = "/org/freedesktop/NetworkManager";
-    
-    private static final Logger logger = LoggerFactory.getLogger(App.class);
-
     public static void main( String[] args ) throws DBusException {
         try (DBusConnection dbusConnection = DBusConnection.getConnection(DBusConnection.DEFAULT_SYSTEM_BUS_ADDRESS)) {
             
-            NetworkManager nm = dbusConnection.getRemoteObject(NM_BUS_NAME, NM_BUS_PATH, NetworkManager.class);
-    
-            Map<String, String> getPermissions = nm.GetPermissions();
-            for (Entry<String, String> entry : getPermissions.entrySet()) {
-                if (!entry.getValue().equals("yes")) {
-                    logger.warn("Missing permission for \"{}\"", entry.getKey());
-                }
-            }
+            NMDbusConnector nm = new NMDbusConnector(dbusConnection);
+            
+            Map<String, Object> config = new HashMap<>();
+            config.put("modified.interface.names", "eth0");
+            config.put("net.interface.eth0.config.dhcpClient4.enabled", false);
+            config.put("net.interface.eth0.config.ip4.address", "192.168.1.24");
+            config.put("net.interface.eth0.config.ip4.prefix", (short) 24);
+            
+            nm.apply(config);
 
         } catch (IOException _ex) {
             _ex.printStackTrace();
