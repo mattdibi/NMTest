@@ -1,4 +1,4 @@
-package org.freedesktop.networkmanager.device;
+package org.freedesktop.networkmanager;
 
 import java.util.List;
 import java.util.Map;
@@ -15,18 +15,23 @@ import org.freedesktop.dbus.types.Variant;
 /**
  * Auto-generated class.
  */
-@DBusInterfaceName("org.freedesktop.NetworkManager.Device.Wired")
+@DBusInterfaceName("org.freedesktop.NetworkManager.AccessPoint")
+@DBusProperty(name = "Flags", type = UInt32.class, access = Access.READ)
+@DBusProperty(name = "WpaFlags", type = UInt32.class, access = Access.READ)
+@DBusProperty(name = "RsnFlags", type = UInt32.class, access = Access.READ)
+@DBusProperty(name = "Ssid", type = AccessPoint.PropertySsidType.class, access = Access.READ)
+@DBusProperty(name = "Frequency", type = UInt32.class, access = Access.READ)
 @DBusProperty(name = "HwAddress", type = String.class, access = Access.READ)
-@DBusProperty(name = "PermHwAddress", type = String.class, access = Access.READ)
-@DBusProperty(name = "Speed", type = UInt32.class, access = Access.READ)
-@DBusProperty(name = "S390Subchannels", type = Wired.PropertyS390SubchannelsType.class, access = Access.READ)
-@DBusProperty(name = "Carrier", type = Boolean.class, access = Access.READ)
-public interface Wired extends DBusInterface {
+@DBusProperty(name = "Mode", type = UInt32.class, access = Access.READ)
+@DBusProperty(name = "MaxBitrate", type = UInt32.class, access = Access.READ)
+@DBusProperty(name = "Strength", type = Byte.class, access = Access.READ)
+@DBusProperty(name = "LastSeen", type = Integer.class, access = Access.READ)
+public interface AccessPoint extends DBusInterface {
 
 
 
 
-    public static interface PropertyS390SubchannelsType extends TypeRef<List<String>> {
+    public static interface PropertySsidType extends TypeRef<List<Byte>> {
 
 
 

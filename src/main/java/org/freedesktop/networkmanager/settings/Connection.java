@@ -1,52 +1,49 @@
 package org.freedesktop.networkmanager.settings;
 
 import java.util.Map;
-
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusProperty;
+import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
 import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
+/**
+ * Auto-generated class.
+ */
 @DBusInterfaceName("org.freedesktop.NetworkManager.Settings.Connection")
+@DBusProperty(name = "Unsaved", type = Boolean.class, access = Access.READ)
+@DBusProperty(name = "Flags", type = UInt32.class, access = Access.READ)
+@DBusProperty(name = "Filename", type = String.class, access = Access.READ)
 public interface Connection extends DBusInterface {
 
-    void Update(Map<String, Map<String, Variant<?>>> properties);
 
-    void UpdateUnsaved(Map<String, Map<String, Variant<?>>> properties);
+    public void Update(Map<String, Map<String, Variant<?>>> properties);
+    public void UpdateUnsaved(Map<String, Map<String, Variant<?>>> properties);
+    public void Delete();
+    public Map<String, Map<String, Variant<?>>> GetSettings();
+    public Map<String, Map<String, Variant<?>>> GetSecrets(String settingName);
+    public void ClearSecrets();
+    public void Save();
+    public Map<String, Variant<?>> Update2(Map<String, Map<String, Variant<?>>> settings, UInt32 flags, Map<String, Variant<?>> args);
 
-    void Delete();
 
-    Map<String, Map<String, Variant<?>>> GetSettings();
+    public static class PropertiesChanged extends DBusSignal {
 
-    Map<String, Map<String, Variant<?>>> GetSecrets(String settingName);
+        private final Map<String, Variant<?>> properties;
 
-    void ClearSecrets();
-
-    void Save();
-
-    Map<String, Variant<?>> Update2(Map<String, Map<String, Variant<?>>> settings, UInt32 flags,
-            Map<String, Variant<?>> args);
-
-    public static class Updated extends DBusSignal {
-
-        public Updated(String path) throws DBusException {
-            super(path);
+        public PropertiesChanged(String _path, Map<String, Variant<?>> _properties) throws DBusException {
+            super(_path, _properties);
+            this.properties = _properties;
         }
-    }
 
-    public static class Removed extends DBusSignal {
 
-        public Removed(String path) throws DBusException {
-            super(path);
+        public Map<String, Variant<?>> getProperties() {
+            return properties;
         }
-    }
 
-    class PropertyNames {
 
-        public static final String Unsaved = "Unsaved";
-        public static final String Flags = "Flags";
-        public static final String Filename = "Filename";
     }
 }

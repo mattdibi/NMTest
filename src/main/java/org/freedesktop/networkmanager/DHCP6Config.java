@@ -1,6 +1,5 @@
-package org.freedesktop.networkmanager.device;
+package org.freedesktop.networkmanager;
 
-import java.util.List;
 import java.util.Map;
 import org.freedesktop.dbus.TypeRef;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
@@ -9,24 +8,19 @@ import org.freedesktop.dbus.annotations.DBusProperty.Access;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.messages.DBusSignal;
-import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
 /**
  * Auto-generated class.
  */
-@DBusInterfaceName("org.freedesktop.NetworkManager.Device.Wired")
-@DBusProperty(name = "HwAddress", type = String.class, access = Access.READ)
-@DBusProperty(name = "PermHwAddress", type = String.class, access = Access.READ)
-@DBusProperty(name = "Speed", type = UInt32.class, access = Access.READ)
-@DBusProperty(name = "S390Subchannels", type = Wired.PropertyS390SubchannelsType.class, access = Access.READ)
-@DBusProperty(name = "Carrier", type = Boolean.class, access = Access.READ)
-public interface Wired extends DBusInterface {
+@DBusInterfaceName("org.freedesktop.NetworkManager.DHCP6Config")
+@DBusProperty(name = "Options", type = DHCP6Config.PropertyOptionsType.class, access = Access.READ)
+public interface DHCP6Config extends DBusInterface {
 
 
 
 
-    public static interface PropertyS390SubchannelsType extends TypeRef<List<String>> {
+    public static interface PropertyOptionsType extends TypeRef<Map<String, Variant>> {
 
 
 
