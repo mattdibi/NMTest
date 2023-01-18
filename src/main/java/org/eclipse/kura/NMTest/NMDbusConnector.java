@@ -90,7 +90,7 @@ public class NMDbusConnector {
             if (deviceType == NMDeviceType.NM_DEVICE_TYPE_ETHERNET) {
                 Connection connection = getAppliedConnection(device); // What if there's no applied connection?
 
-                Map<String, Variant<?>> connectionMap = buildConnectionSettings(connection.GetSettings());
+                Map<String, Variant<?>> connectionMap = copyConnectionSettings(connection.GetSettings());
                 Map<String, Variant<?>> ipv4Map = buildIpv4Settings(networkConfiguration, iface);
 
                 Map<String, Map<String, Variant<?>>> newConnectionSettings = new HashMap<>();
@@ -154,7 +154,7 @@ public class NMDbusConnector {
         return dbusConnection.getRemoteObject(NM_BUS_NAME, connectionPath.getPath(), Connection.class);
     }
 
-    private Map<String, Variant<?>> buildConnectionSettings(Map<String, Map<String, Variant<?>>> connectionSettings) {
+    private Map<String, Variant<?>> copyConnectionSettings(Map<String, Map<String, Variant<?>>> connectionSettings) {
         Map<String, Variant<?>> connectionMap = new HashMap<>();
         for (String key : connectionSettings.get("connection").keySet()) {
             connectionMap.put(key, connectionSettings.get("connection").get(key));
