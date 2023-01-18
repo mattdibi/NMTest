@@ -78,7 +78,7 @@ public class NMDbusConnector {
     public void apply(Map<String, Object> networkConfiguration) throws DBusException {
         logger.info("Applying configuration using NetworkManager Dbus connector");
 
-        List<String> netInterfaces = NMSettingsConverter.getNetworkInterfaces((String) networkConfiguration.get("net.interfaces"));
+        List<String> netInterfaces = NMSettingsConverter.splitCommaSeparatedStrings((String) networkConfiguration.get("net.interfaces"));
 
         for (String iface : netInterfaces) {
             Device device = getDeviceByIpIface(iface); // What if no device matches?

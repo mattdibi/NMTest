@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.freedesktop.dbus.types.UInt32;
@@ -39,7 +40,7 @@ public class NMSettingsConverter {
             String dhcpClient4DNSProperty = String.format("net.interface.%s.config.ip4.dnsServers", iface);
             if (networkConfiguration.containsKey(dhcpClient4DNSProperty)) {
                 String dhcpClient4DNS = (String) networkConfiguration.get(dhcpClient4DNSProperty);
-                ipv4Map.put("dns-search", new Variant<>(getDNSServers(dhcpClient4DNS)));
+                ipv4Map.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dhcpClient4DNS)));
             }
             ipv4Map.put("ignore-auto-dns", new Variant<>(true));
 
@@ -55,30 +56,20 @@ public class NMSettingsConverter {
             if (networkConfiguration.containsKey(dhcpClient4DNSProperty)) {
                 String dhcpClient4DNS = (String) networkConfiguration.get(dhcpClient4DNSProperty);
                 ipv4Map.put("ignore-auto-dns", new Variant<>(true));
-                ipv4Map.put("dns-search", new Variant<>(getDNSServers(dhcpClient4DNS)));
+                ipv4Map.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dhcpClient4DNS)));
             }
         }
 
         return ipv4Map;
     }
     
-    public static List<String> getNetworkInterfaces(String netInterfaces) {
-        List<String> netInterfacesNames = new ArrayList<>();
+    public static List<String> splitCommaSeparatedStrings(String commaSeparatedString) {
+        List<String> stringList = new ArrayList<>();
         Pattern comma = Pattern.compile(",");
-        if (netInterfaces != null) {
-            comma.splitAsStream(netInterfaces).filter(s -> !s.trim().isEmpty()).forEach(netInterfacesNames::add);
+        if (Objects.nonNull(commaSeparatedString) && !commaSeparatedString.isEmpty() ) {
+            comma.splitAsStream(commaSeparatedString).filter(s -> !s.trim().isEmpty()).forEach(stringList::add);
         }
 
-        return netInterfacesNames;
-    }
-
-    private static List<String> getDNSServers(String dnsServersString) {
-        List<String> dnsServers = new ArrayList<>();
-        Pattern comma = Pattern.compile(",");
-        if (dnsServersString != null) {
-            comma.splitAsStream(dnsServersString).filter(s -> !s.trim().isEmpty()).forEach(dnsServers::add);
-        }
-
-        return dnsServers;
+        return stringList;
     }
 }
