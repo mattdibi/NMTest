@@ -17,18 +17,18 @@ public class App {
             // nm.checkPermissions();
             
             Map<String, Object> config = new HashMap<>();
-            config.put("net.interfaces", "wlan0");
-            config.put("net.interface.wlan0.config.dhcpClient4.enabled", true);
-            //config.put("net.interface.wlan0.config.ip4.address", "172.16.1.55");
-            //config.put("net.interface.wlan0.config.ip4.prefix", (short) 24);
+            config.put("net.interfaces", "eth0");
+            config.put("net.interface.eth0.config.dhcpClient4.enabled", false);
+            config.put("net.interface.eth0.config.ip4.address", "192.168.1.24");
+            config.put("net.interface.eth0.config.ip4.prefix", (short) 24);
 
-            config.put("net.interface.wlan0.config.wifi.mode", "INFRA"); // -> 802-11-wireless.mode
-            config.put("net.interface.wlan0.config.wifi.infra.ssid", "kura_gateway_raspberry_pi");
-            config.put("net.interface.wlan0.config.wifi.infra.radioMode", "RADIO_MODE_80211b"); // -> 802-11-wireless.band
-            config.put("net.interface.wlan0.config.wifi.infra.channel", "6"); // -> 802-11-wireless.channel
-            config.put("net.interface.wlan0.config.wifi.infra.passphrase", "testtesttest"); // -> 802-11-wireless-security.psk
-            config.put("net.interface.wlan0.config.wifi.infra.securityType", "SECURITY_WPA2"); // -> 802-11-wireless-security.key-mgmt
-            config.put("net.interface.wlan0.config.wifi.infra.groupCiphers", "CCMP"); // -> 802-11-wireless-security.group
+            // config.put("net.interface.wlan0.config.wifi.mode", "INFRA"); // -> 802-11-wireless.mode
+            // config.put("net.interface.wlan0.config.wifi.infra.ssid", "kura_gateway_raspberry_pi");
+            // config.put("net.interface.wlan0.config.wifi.infra.radioMode", "RADIO_MODE_80211b"); // -> 802-11-wireless.band
+            // config.put("net.interface.wlan0.config.wifi.infra.channel", "6"); // -> 802-11-wireless.channel
+            // config.put("net.interface.wlan0.config.wifi.infra.passphrase", "testtesttest"); // -> 802-11-wireless-security.psk
+            // config.put("net.interface.wlan0.config.wifi.infra.securityType", "SECURITY_WPA2"); // -> 802-11-wireless-security.key-mgmt
+            // config.put("net.interface.wlan0.config.wifi.infra.groupCiphers", "CCMP"); // -> 802-11-wireless-security.group
             
             nm.apply(config);
 
