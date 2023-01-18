@@ -13,19 +13,19 @@ import org.freedesktop.dbus.types.UInt32;
 import org.freedesktop.dbus.types.Variant;
 
 public class NMSettingsConverter {
-    
+
     public static Map<String, Variant<?>> buildIpv4Settings(Map<String, Object> networkConfiguration, String iface) {
         Map<String, Variant<?>> ipv4Map = new HashMap<>();
 
-        Boolean dhcpClient4Enabled = get(networkConfiguration, "net.interface.%s.config.dhcpClient4.enabled", iface);
+        Boolean dhcpClient4Enabled = get(networkConfiguration, Boolean.class, "net.interface.%s.config.dhcpClient4.enabled", iface);
 
         // Should handle net.interface.eth0.config.ip4.status here
 
         if (Boolean.FALSE.equals(dhcpClient4Enabled)) {
             ipv4Map.put("method", new Variant<>("manual"));
 
-            String dhcpClient4Address = get(networkConfiguration, "net.interface.%s.config.ip4.address", iface);
-            Short dhcpClient4Prefix = get(networkConfiguration, "net.interface.%s.config.ip4.prefix", iface);
+            String dhcpClient4Address = get(networkConfiguration, String.class, "net.interface.%s.config.ip4.address", iface);
+            Short dhcpClient4Prefix = get(networkConfiguration, Short.class, "net.interface.%s.config.ip4.prefix", iface);
 
             Map<String, Variant<?>> address = new HashMap<>();
             address.put("address", new Variant<>(dhcpClient4Address));
@@ -34,20 +34,20 @@ public class NMSettingsConverter {
             List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
             ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
-            Optional<String> dhcpClient4DNS = getOpt(networkConfiguration, "net.interface.%s.config.ip4.dnsServers", iface);
+            Optional<String> dhcpClient4DNS = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.dnsServers", iface);
             if (dhcpClient4DNS.isPresent()) {
                 ipv4Map.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dhcpClient4DNS.get())));
             }
             ipv4Map.put("ignore-auto-dns", new Variant<>(true));
 
-            Optional<String> dhcpClient4Gateway = getOpt(networkConfiguration, "net.interface.%s.config.ip4.gateway", iface);
+            Optional<String> dhcpClient4Gateway = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.gateway", iface);
             if (dhcpClient4Gateway.isPresent()) {
                 ipv4Map.put("gateway", new Variant<>(dhcpClient4Gateway));
             }
         } else {
             ipv4Map.put("method", new Variant<>("auto"));
 
-            Optional<String> dhcpClient4DNS = getOpt(networkConfiguration, "net.interface.%s.config.ip4.dnsServers", iface);
+            Optional<String> dhcpClient4DNS = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.dnsServers", iface);
             if (dhcpClient4DNS.isPresent()) {
                 ipv4Map.put("ignore-auto-dns", new Variant<>(true));
                 ipv4Map.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dhcpClient4DNS.get())));
@@ -56,21 +56,21 @@ public class NMSettingsConverter {
 
         return ipv4Map;
     }
-    
-    public static <T> T get(Map<String, Object> properties, String key, Object ... args) {
+
+    public static <T> T get(Map<String, Object> properties, Class<T> clazz, String key, Object ... args) {
         String formattedKey = String.format(key, args);
-        return (T) properties.get(formattedKey);
+        return clazz.cast(properties.get(formattedKey));
     }
 
-    public static <T> Optional<T> getOpt(Map<String, Object> properties, String key, Object ... args) {
+    public static <T> Optional<T> getOpt(Map<String, Object> properties, Class<T> clazz, String key, Object ... args) {
         String formattedKey = String.format(key, args);
         if(properties.containsKey(formattedKey)) {
-            return Optional.of((T) properties.get(formattedKey));
+            return Optional.of(clazz.cast(properties.get(formattedKey)));
         } else {
             return Optional.empty();
         }
     }
-    
+
     public static List<String> splitCommaSeparatedStrings(String commaSeparatedString) {
         List<String> stringList = new ArrayList<>();
         Pattern comma = Pattern.compile(",");
