@@ -80,15 +80,14 @@ public class NMDbusConnector {
         List<String> netInterfaces = getNetworkInterfaces((String) networkConfiguration.get("net.interfaces"));
 
         for (String iface : netInterfaces) {
-            NMDeviceType deviceType = getDeviceTypeByIpIface(iface);
+            Device device = getDeviceByIpIface(iface);
+            NMDeviceType deviceType = getDeviceType(device);
 
             logger.info("Interface: {}", iface);
             logger.info("DeviceType: {}", deviceType);
 
             if (deviceType == NMDeviceType.NM_DEVICE_TYPE_ETHERNET) {
-                Device ifaceDevice = getDeviceByIpIface(iface);
-
-                String connectionUuid = getAppliedConnectionUuid(ifaceDevice); // What if there's no applied connection?
+                String connectionUuid = getAppliedConnectionUuid(device); // What if there's no applied connection?
                 Connection connection = getConnectionByUuid(connectionUuid);
 
                 Map<String, Map<String, Variant<?>>> currentConnectionSettings = connection.GetSettings();
@@ -104,7 +103,7 @@ public class NMDbusConnector {
                 connection.Save();
 
                 nm.ActivateConnection(new DBusPath(connection.getObjectPath()),
-                        new DBusPath(ifaceDevice.getObjectPath()), new DBusPath("/"));
+                        new DBusPath(device.getObjectPath()), new DBusPath("/"));
             } else {
                 logger.warn("Device type \"{}\" currently not supported", deviceType);
                 return;
@@ -133,13 +132,11 @@ public class NMDbusConnector {
         return dnsServers;
     }
 
-    private NMDeviceType getDeviceTypeByIpIface(String iface) throws DBusException {
-        DBusPath ifaceDevicePath = nm.GetDeviceByIpIface(iface);
-        Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, ifaceDevicePath.getPath(),
+    private NMDeviceType getDeviceType(Device device) throws DBusException {
+        Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
 
         return NMDeviceType.fromUInt32(deviceProperties.Get("org.freedesktop.NetworkManager.Device", "DeviceType"));
-
     }
 
     private Device getDeviceByIpIface(String iface) throws DBusException {
