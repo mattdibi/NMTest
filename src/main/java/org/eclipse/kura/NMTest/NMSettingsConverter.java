@@ -15,46 +15,46 @@ import org.freedesktop.dbus.types.Variant;
 public class NMSettingsConverter {
 
     public static Map<String, Variant<?>> buildIpv4Settings(Map<String, Object> networkConfiguration, String iface) {
-        Map<String, Variant<?>> ipv4Map = new HashMap<>();
+        Map<String, Variant<?>> settings = new HashMap<>();
 
         Boolean dhcpClient4Enabled = get(networkConfiguration, Boolean.class, "net.interface.%s.config.dhcpClient4.enabled", iface);
 
         // Should handle net.interface.eth0.config.ip4.status here
 
         if (Boolean.FALSE.equals(dhcpClient4Enabled)) {
-            ipv4Map.put("method", new Variant<>("manual"));
+            settings.put("method", new Variant<>("manual"));
 
-            String dhcpClient4Address = get(networkConfiguration, String.class, "net.interface.%s.config.ip4.address", iface);
-            Short dhcpClient4Prefix = get(networkConfiguration, Short.class, "net.interface.%s.config.ip4.prefix", iface);
+            String address = get(networkConfiguration, String.class, "net.interface.%s.config.ip4.address", iface);
+            Short prefix = get(networkConfiguration, Short.class, "net.interface.%s.config.ip4.prefix", iface);
 
-            Map<String, Variant<?>> address = new HashMap<>();
-            address.put("address", new Variant<>(dhcpClient4Address));
-            address.put("prefix", new Variant<>(new UInt32(dhcpClient4Prefix)));
+            Map<String, Variant<?>> addressEntry = new HashMap<>();
+            addressEntry.put("address", new Variant<>(address));
+            addressEntry.put("prefix", new Variant<>(new UInt32(prefix)));
 
-            List<Map<String, Variant<?>>> addressData = Arrays.asList(address);
-            ipv4Map.put("address-data", new Variant<>(addressData, "aa{sv}"));
+            List<Map<String, Variant<?>>> addressData = Arrays.asList(addressEntry);
+            settings.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
-            Optional<String> dhcpClient4DNS = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.dnsServers", iface);
-            if (dhcpClient4DNS.isPresent()) {
-                ipv4Map.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dhcpClient4DNS.get())));
+            Optional<String> dnsServers = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.dnsServers", iface);
+            if (dnsServers.isPresent()) {
+                settings.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dnsServers.get())));
             }
-            ipv4Map.put("ignore-auto-dns", new Variant<>(true));
+            settings.put("ignore-auto-dns", new Variant<>(true));
 
-            Optional<String> dhcpClient4Gateway = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.gateway", iface);
-            if (dhcpClient4Gateway.isPresent()) {
-                ipv4Map.put("gateway", new Variant<>(dhcpClient4Gateway));
+            Optional<String> gateway = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.gateway", iface);
+            if (gateway.isPresent()) {
+                settings.put("gateway", new Variant<>(gateway));
             }
         } else {
-            ipv4Map.put("method", new Variant<>("auto"));
+            settings.put("method", new Variant<>("auto"));
 
-            Optional<String> dhcpClient4DNS = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.dnsServers", iface);
-            if (dhcpClient4DNS.isPresent()) {
-                ipv4Map.put("ignore-auto-dns", new Variant<>(true));
-                ipv4Map.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dhcpClient4DNS.get())));
+            Optional<String> dnsServers = getOpt(networkConfiguration, String.class, "net.interface.%s.config.ip4.dnsServers", iface);
+            if (dnsServers.isPresent()) {
+                settings.put("ignore-auto-dns", new Variant<>(true));
+                settings.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dnsServers.get())));
             }
         }
 
-        return ipv4Map;
+        return settings;
     }
 
     public static <T> T get(Map<String, Object> properties, Class<T> clazz, String key, Object ... args) {
