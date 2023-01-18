@@ -81,7 +81,7 @@ public class NMDbusConnector {
         List<String> netInterfaces = getNetworkInterfaces((String) networkConfiguration.get("net.interfaces"));
 
         for (String iface : netInterfaces) {
-            Device device = getDeviceByIpIface(iface);
+            Device device = getDeviceByIpIface(iface); // What if no device matches?
             NMDeviceType deviceType = getDeviceType(device);
 
             logger.info("Interface: {}", iface);
