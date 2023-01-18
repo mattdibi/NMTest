@@ -27,6 +27,7 @@ public class NMDbusConnector {
     private static final Logger logger = LoggerFactory.getLogger(NMDbusConnector.class);
     private static final String NM_BUS_NAME = "org.freedesktop.NetworkManager";
     private static final String NM_BUS_PATH = "/org/freedesktop/NetworkManager";
+    private static final String NM_SETTINGS_PATH = "/org/freedesktop/NetworkManager/Settings";
 
     private static NMDbusConnector instance;
     private DBusConnection dbusConnection;
@@ -87,12 +88,9 @@ public class NMDbusConnector {
             logger.info("DeviceType: {}", deviceType);
 
             if (deviceType == NMDeviceType.NM_DEVICE_TYPE_ETHERNET) {
-                String connectionUuid = getAppliedConnectionUuid(device); // What if there's no applied connection?
-                Connection connection = getConnectionByUuid(connectionUuid);
+                Connection connection = getAppliedConnection(device); // What if there's no applied connection?
 
-                Map<String, Map<String, Variant<?>>> currentConnectionSettings = connection.GetSettings();
-
-                Map<String, Variant<?>> connectionMap = buildConnectionSettings(currentConnectionSettings);
+                Map<String, Variant<?>> connectionMap = buildConnectionSettings(connection.GetSettings());
                 Map<String, Variant<?>> ipv4Map = buildIpv4Settings(networkConfiguration, iface);
 
                 Map<String, Map<String, Variant<?>>> newConnectionSettings = new HashMap<>();
@@ -144,18 +142,16 @@ public class NMDbusConnector {
         return dbusConnection.getRemoteObject(NM_BUS_NAME, ifaceDevicePath.getPath(), Device.class);
     }
 
-    private Connection getConnectionByUuid(String uuid) throws DBusException {
-        Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, "/org/freedesktop/NetworkManager/Settings",
+    private Connection getAppliedConnection(Device dev) throws DBusException {
+        Map<String, Map<String, Variant<?>>> connectionSettings = dev.GetAppliedConnection(new UInt32(0))
+                .getConnection();
+        String uuid = String.valueOf(connectionSettings.get("connection").get("uuid")).replaceAll("\\[|\\]", "");
+
+        Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_PATH,
                 Settings.class);
 
         DBusPath connectionPath = settings.GetConnectionByUuid(uuid);
         return dbusConnection.getRemoteObject(NM_BUS_NAME, connectionPath.getPath(), Connection.class);
-    }
-
-    private String getAppliedConnectionUuid(Device dev) {
-        Map<String, Map<String, Variant<?>>> connectionSettings = dev.GetAppliedConnection(new UInt32(0))
-                .getConnection();
-        return String.valueOf(connectionSettings.get("connection").get("uuid")).replaceAll("\\[|\\]", "");
     }
 
     private Map<String, Variant<?>> buildConnectionSettings(Map<String, Map<String, Variant<?>>> connectionSettings) {
