@@ -11,10 +11,11 @@ public class App {
     public static void main( String[] args ) throws DBusException {
         try (DBusConnection dbusConnection = DBusConnection.getConnection(DBusConnection.DEFAULT_SYSTEM_BUS_ADDRESS)) {
             
-            NMDbusConnector nm = new NMDbusConnector(dbusConnection);
+            NMDbusConnector nm = NMDbusConnector.createInstance();
+            nm.checkPermissions();
             
             Map<String, Object> config = new HashMap<>();
-            config.put("modified.interface.names", "eth0");
+            config.put("net.interfaces", "eth0");
             config.put("net.interface.eth0.config.dhcpClient4.enabled", false);
             config.put("net.interface.eth0.config.ip4.address", "192.168.1.24");
             config.put("net.interface.eth0.config.ip4.prefix", (short) 24);
