@@ -14,6 +14,10 @@ import org.freedesktop.dbus.types.Variant;
 
 public class NMSettingsConverter {
 
+    private NMSettingsConverter() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static Map<String, Variant<?>> buildIpv4Settings(Map<String, Object> networkConfiguration, String iface) {
         Map<String, Variant<?>> settings = new HashMap<>();
 
