@@ -19,9 +19,6 @@ public class NMSettingsConverter {
 
     private static final Logger logger = LoggerFactory.getLogger(NMSettingsConverter.class);
 
-    private static final String WIFI_INFRA = "infra";
-    private static final String WIFI_MASTER = "master";
-
     private static final Map<String, String> WIFI_MODE_CONVERTER = initWifiModeConverter();
     private static final Map<String, String> WIFI_BAND_CONVERTER = initWifiBandConverter();
     private static final Map<String, List<String>> WIFI_CIPHER_CONVERTER = initWifiCipherConverter();
@@ -138,11 +135,6 @@ public class NMSettingsConverter {
 
         String propMode = props.get(String.class, "net.interface.%s.config.wifi.mode", iface);
 
-        if (!propMode.equals("INFRA")) {
-            logger.warn("Unsupported WiFi mode"); // WIP
-            return settings;
-        }
-
         String mode = WIFI_MODE_CONVERTER.get(propMode);
         String ssid = props.get(String.class, "net.interface.%s.config.wifi.%s.ssid", iface, propMode.toLowerCase());
         String band = WIFI_BAND_CONVERTER.get(
@@ -167,11 +159,6 @@ public class NMSettingsConverter {
         Map<String, Variant<?>> settings = new HashMap<>();
 
         String propMode = props.get(String.class, "net.interface.%s.config.wifi.mode", iface);
-
-        if (!propMode.equals("INFRA")) {
-            logger.warn("Unsupported WiFi mode"); // WIP
-            return settings;
-        }
 
         String psk = props.get(String.class, "net.interface.%s.config.wifi.%s.passphrase", iface,
                 propMode.toLowerCase());
