@@ -23,7 +23,7 @@ public class NMSettingsConverter {
     
     private static final Map<String, String> wifiModeConverter = initWifiModeConverter();
     private static final Map<String, String> wifiBandConverter = initWifiBandConverter();
-    private static final Map<String, List<String>> wifiGroupConverter = initWifiGroupConverter();
+    private static final Map<String, List<String>> wifiCipherConverter = initWifiCipherConverter();
     private static final Map<String, String> wifiKeyMgmtConverter = initWifiKeyMgmtConverter();
     
     private NMSettingsConverter() {
@@ -48,7 +48,7 @@ public class NMSettingsConverter {
         return map;
     }
 
-    private static Map<String, List<String>> initWifiGroupConverter() {
+    private static Map<String, List<String>> initWifiCipherConverter() {
         Map<String, List<String>> map = new HashMap<>();
         
         map.put("CCMP", Arrays.asList("ccmp"));
@@ -161,11 +161,13 @@ public class NMSettingsConverter {
         
         String psk = get(networkConfiguration, String.class, "net.interface.%s.config.wifi.%s.passphrase", iface, propMode.toLowerCase());
         String keyMgmt = wifiKeyMgmtConverter.get(get(networkConfiguration, String.class, "net.interface.%s.config.wifi.%s.securityType", iface, propMode.toLowerCase()));
-        List<String> group = wifiGroupConverter.get(get(networkConfiguration, String.class, "net.interface.%s.config.wifi.%s.groupCiphers", iface, propMode.toLowerCase()));
+        // List<String> group = wifiCipherConverter.get(get(networkConfiguration, String.class, "net.interface.%s.config.wifi.%s.groupCiphers", iface, propMode.toLowerCase()));
+        // List<String> pairwise = wifiCipherConverter.get(get(networkConfiguration, String.class, "net.interface.%s.config.wifi.%s.pairwiseCiphers", iface, propMode.toLowerCase()));
         
         settings.put("psk", new Variant<>(psk)); // Will require decryption in Kura
         settings.put("key-mgmt", new Variant<>(keyMgmt));
         // settings.put("group", new Variant<>(group, "a(s)")); <- Not working: Trying to marshall to unconvertible type (from java.lang.String to ().
+        // settings.put("pairwise", new Variant<>(group, "a(s)")); <- Not working: Trying to marshall to unconvertible type (from java.lang.String to ().
         
         return settings;
     }
