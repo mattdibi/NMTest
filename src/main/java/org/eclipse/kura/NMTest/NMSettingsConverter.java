@@ -29,22 +29,20 @@ public class NMSettingsConverter {
         throw new IllegalStateException("Utility class");
     }
     
-    public static Map<String, Map<String, Variant<?>>> buildSettings(Map<String, Object> networkConfiguration, Optional<Connection> oldConnection, String iface, NMDeviceType deviceType) {
-        NetworkProperties props = new NetworkProperties(networkConfiguration);
-
+    public static Map<String, Map<String, Variant<?>>> buildSettings(NetworkProperties properties, Optional<Connection> oldConnection, String iface, NMDeviceType deviceType) {
         Map<String, Map<String, Variant<?>>> newConnectionSettings = new HashMap<>();
 
         Map<String, Variant<?>> connectionMap = buildConnectionSettings(oldConnection, iface);
         newConnectionSettings.put("connection", connectionMap);
 
-        Map<String, Variant<?>> ipv4Map = NMSettingsConverter.buildIpv4Settings(props, iface);
-        Map<String, Variant<?>> ipv6Map = NMSettingsConverter.buildIpv6Settings(props, iface);
+        Map<String, Variant<?>> ipv4Map = NMSettingsConverter.buildIpv4Settings(properties, iface);
+        Map<String, Variant<?>> ipv6Map = NMSettingsConverter.buildIpv6Settings(properties, iface);
         newConnectionSettings.put("ipv4", ipv4Map);
         newConnectionSettings.put("ipv6", ipv6Map);
 
         if(deviceType == NMDeviceType.NM_DEVICE_TYPE_WIFI) {
-            Map<String, Variant<?>> wifiSettingsMap = NMSettingsConverter.build80211WirelessSettings(props, iface);
-            Map<String, Variant<?>> wifiSecuritySettingsMap = NMSettingsConverter.build80211WirelessSecuritySettings(props, iface);
+            Map<String, Variant<?>> wifiSettingsMap = NMSettingsConverter.build80211WirelessSettings(properties, iface);
+            Map<String, Variant<?>> wifiSecuritySettingsMap = NMSettingsConverter.build80211WirelessSecuritySettings(properties, iface);
             newConnectionSettings.put("802-11-wireless", wifiSettingsMap);
             newConnectionSettings.put("802-11-wireless-security", wifiSecuritySettingsMap);
         }
@@ -72,9 +70,9 @@ public class NMSettingsConverter {
             List<Map<String, Variant<?>>> addressData = Arrays.asList(addressEntry);
             settings.put("address-data", new Variant<>(addressData, "aa{sv}"));
 
-            Optional<String> dnsServers = props.getOpt(String.class, "net.interface.%s.config.ip4.dnsServers", iface);
+            Optional<List<String>> dnsServers = props.getOptStringList("net.interface.%s.config.ip4.dnsServers", iface);
             if (dnsServers.isPresent()) {
-                settings.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dnsServers.get())));
+                settings.put("dns-search", new Variant<>(dnsServers.get()));
             }
             settings.put("ignore-auto-dns", new Variant<>(true));
 
@@ -85,10 +83,10 @@ public class NMSettingsConverter {
         } else {
             settings.put("method", new Variant<>("auto"));
 
-            Optional<String> dnsServers = props.getOpt(String.class, "net.interface.%s.config.ip4.dnsServers", iface);
+            Optional<List<String>> dnsServers = props.getOptStringList("net.interface.%s.config.ip4.dnsServers", iface);
             if (dnsServers.isPresent()) {
                 settings.put("ignore-auto-dns", new Variant<>(true));
-                settings.put("dns-search", new Variant<>(splitCommaSeparatedStrings(dnsServers.get())));
+                settings.put("dns-search", new Variant<>(dnsServers.get()));
             }
         }
 
@@ -142,6 +140,7 @@ public class NMSettingsConverter {
         // List<String> pairwise = wifiCipherConverter.get(props.get(String.class,
         // "net.interface.%s.config.wifi.%s.pairwiseCiphers", iface, propMode.toLowerCase()));
 
+        //  String plainPsk = String.valueOf(this.cryptoService.decryptAes(psk.toCharArray()));
         settings.put("psk", new Variant<>(psk)); // Will require decryption in Kura
         settings.put("key-mgmt", new Variant<>(keyMgmt));
         // settings.put("group", new Variant<>(group, "a(s)")); <- Not working: Trying to marshall to unconvertible type
@@ -152,16 +151,6 @@ public class NMSettingsConverter {
         return settings;
     }
 
-    public static List<String> splitCommaSeparatedStrings(String commaSeparatedString) {
-        List<String> stringList = new ArrayList<>();
-        Pattern comma = Pattern.compile(",");
-        if (Objects.nonNull(commaSeparatedString) && !commaSeparatedString.isEmpty()) {
-            comma.splitAsStream(commaSeparatedString).filter(s -> !s.trim().isEmpty()).forEach(stringList::add);
-        }
-
-        return stringList;
-    }
-    
     private static Map<String, Variant<?>> buildConnectionSettings(Optional<Connection> connection, String iface) {
         if(!connection.isPresent()) {
             return createConnectionSettings(iface);

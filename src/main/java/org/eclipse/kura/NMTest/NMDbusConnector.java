@@ -1,14 +1,11 @@
 package org.eclipse.kura.NMTest;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import org.freedesktop.NetworkManager;
 import org.freedesktop.dbus.DBusPath;
@@ -82,7 +79,9 @@ public class NMDbusConnector {
     public void apply(Map<String, Object> networkConfiguration) throws DBusException {
         logger.info("Applying configuration using NetworkManager Dbus connector");
 
-        List<String> netInterfaces = NMSettingsConverter.splitCommaSeparatedStrings((String) networkConfiguration.get("net.interfaces"));
+        NetworkProperties properties = new NetworkProperties(networkConfiguration);
+
+        List<String> netInterfaces = properties.getStringList("net.interfaces");
 
         for (String iface : netInterfaces) {
             Device device = getDeviceByIpIface(iface); // What if no device matches?
@@ -96,7 +95,7 @@ public class NMDbusConnector {
 
             Optional<Connection> connection = getAppliedConnection(device);
 
-            Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(networkConfiguration, connection, iface, deviceType);
+            Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties, connection, iface, deviceType);
             
             logger.info("New settings: {}", newConnectionSettings);
 
