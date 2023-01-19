@@ -44,6 +44,11 @@ public class NMSettingsConverter {
         
         map.put("RADIO_MODE_80211a", "a");
         map.put("RADIO_MODE_80211b", "bg");
+        map.put("RADIO_MODE_80211g", "bg");
+        map.put("RADIO_MODE_80211nHT20", "bg"); // TBD
+        map.put("RADIO_MODE_80211nHT40below", "bg"); // TBD
+        map.put("RADIO_MODE_80211nHT40above", "bg"); // TBD
+        map.put("RADIO_MODE_80211_AC", "a"); // TBD
         
         return map;
     }
