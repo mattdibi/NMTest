@@ -94,8 +94,8 @@ public class NMDbusConnector {
                 Map<String, Variant<?>> connectionMap = buildConnectionSettings(connection, iface);
                 Map<String, Variant<?>> ipv4Map = NMSettingsConverter.buildIpv4Settings(networkConfiguration, iface);
                 Map<String, Variant<?>> ipv6Map = NMSettingsConverter.buildIpv6Settings(networkConfiguration, iface);
-                Map<String, Variant<?>> wifiSettingsMap = NMSettingsConverter.build802_11_WirelessSettings(networkConfiguration, iface);
-                Map<String, Variant<?>> wifiSecuritySettingsMap = NMSettingsConverter.build802_11_WirelessSecuritySettings(networkConfiguration, iface);
+                Map<String, Variant<?>> wifiSettingsMap = NMSettingsConverter.build80211WirelessSettings(networkConfiguration, iface);
+                Map<String, Variant<?>> wifiSecuritySettingsMap = NMSettingsConverter.build80211WirelessSecuritySettings(networkConfiguration, iface);
 
                 Map<String, Map<String, Variant<?>>> newConnectionSettings = new HashMap<>();
                 newConnectionSettings.put("ipv4", ipv4Map);
