@@ -1,6 +1,9 @@
 package org.eclipse.kura.NMTest;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +83,16 @@ public class NMSettingsConverter {
         } else if(ip4Status.equals(KuraInterfaceStatus.ENABLEDWAN)){
             Optional<List<String>> dnsServers = props.getOptStringList("net.interface.%s.config.ip4.dnsServers", iface);
             if (dnsServers.isPresent()){
-                settings.put("dns", new Variant<>(dnsServers.get(), "au")); // FIX
+                List<UInt32> uintDnsServers = new ArrayList<>();
+                for(String dnsServer : dnsServers.get()) {
+                    try {
+                        UInt32 uintDnsServer = convertIp(dnsServer);
+                        uintDnsServers.add(uintDnsServer);
+                    } catch (UnknownHostException e) {
+                        logger.warn("Cannot convert dns server \"{}\" because: ", dnsServer, e);
+                    }
+                }
+                settings.put("dns", new Variant<>(uintDnsServers, "au"));
                 settings.put("ignore-auto-dns", new Variant<>(true));
             }
             Optional<String> gateway = props.getOpt(String.class, "net.interface.%s.config.ip4.gateway", iface);
@@ -148,6 +160,19 @@ public class NMSettingsConverter {
         // type (from java.lang.String to ().
 
         return settings;
+    }
+    
+    private static UInt32 convertIp(String ipAddrString) throws UnknownHostException {
+        InetAddress address = InetAddress.getByName(ipAddrString);
+        byte[] addrBytes = address.getAddress();
+
+        long result = 0;
+        result = result << 8 | (addrBytes[3] & 0xFF);
+        result = result << 8 | (addrBytes[2] & 0xFF);
+        result = result << 8 | (addrBytes[1] & 0xFF);
+        result = result << 8 | (addrBytes[0] & 0xFF);
+        
+        return new UInt32(result);
     }
 
     private static Map<String, Variant<?>> buildConnectionSettings(Optional<Connection> connection, String iface,
