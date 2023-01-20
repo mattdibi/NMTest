@@ -18,11 +18,12 @@ public class App {
             
             Map<String, Object> config = new HashMap<>();
             config.put("net.interfaces", "eth0");
-            config.put("net.interface.eth0.config.ip4.status", "netIPv4StatusEnabledLAN");
-            config.put("net.interface.eth0.config.dhcpClient4.enabled", true);
-            // config.put("net.interface.wlan0.config.ip4.address", "192.168.6.24");
-            // config.put("net.interface.wlan0.config.ip4.prefix", (short) 24);
-            // config.put("net.interface.wlan0.config.ip4.dnsServers", "");
+			    config.put("net.interface.eth0.config.ip4.status", "netIPv4StatusEnabledWAN");
+            config.put("net.interface.eth0.config.dhcpClient4.enabled", false);
+            config.put("net.interface.eth0.config.ip4.address", "192.168.1.24");
+            config.put("net.interface.eth0.config.ip4.prefix", (short) 24);
+            config.put("net.interface.eth0.config.ip4.dnsServers", "192.168.1.10");
+            config.put("net.interface.eth0.config.ip4.gateway", "192.168.1.10");
 
             // config.put("net.interface.wlan0.config.wifi.mode", "MASTER"); // -> 802-11-wireless.mode
             // config.put("net.interface.wlan0.config.wifi.master.ssid", "ciao");
