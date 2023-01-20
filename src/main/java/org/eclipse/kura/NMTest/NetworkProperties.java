@@ -8,30 +8,30 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class NetworkProperties {
-    
+
     private Map<String, Object> properties;
 
     public NetworkProperties(Map<String, Object> rawProperties) {
         this.properties = Objects.requireNonNull(rawProperties);
     }
-    
-    public <T> T get(Class<T> clazz, String key, Object ... args) {
+
+    public <T> T get(Class<T> clazz, String key, Object... args) {
         String formattedKey = String.format(key, args);
         return clazz.cast(this.properties.get(formattedKey));
     }
 
-    public <T> Optional<T> getOpt(Class<T> clazz, String key, Object ... args) {
+    public <T> Optional<T> getOpt(Class<T> clazz, String key, Object... args) {
         String formattedKey = String.format(key, args);
-        if(this.properties.containsKey(formattedKey)) {
+        if (this.properties.containsKey(formattedKey)) {
             return Optional.of(clazz.cast(this.properties.get(formattedKey)));
         } else {
             return Optional.empty();
         }
     }
-    
-    public List<String> getStringList(String key, Object ... args) {
+
+    public List<String> getStringList(String key, Object... args) {
         String commaSeparatedString = get(String.class, key, args);
-        
+
         List<String> stringList = new ArrayList<>();
         Pattern comma = Pattern.compile(",");
         if (Objects.nonNull(commaSeparatedString) && !commaSeparatedString.isEmpty()) {
@@ -40,13 +40,22 @@ public class NetworkProperties {
 
         return stringList;
     }
-    
-    public Optional<List<String>> getOptStringList(String key, Object ... args) {
+
+    public Optional<List<String>> getOptStringList(String key, Object... args) {
         String formattedKey = String.format(key, args);
-        if(this.properties.containsKey(formattedKey)) {
-            return Optional.of(getStringList(formattedKey, args));
-        } else {
+        if (!this.properties.containsKey(formattedKey)) {
             return Optional.empty();
         }
+
+        String commaSeparatedString = get(String.class, key, args);
+        if (Objects.isNull(commaSeparatedString) || commaSeparatedString.isEmpty()) {
+            return Optional.empty();
+        }
+
+        List<String> stringList = new ArrayList<>();
+        Pattern comma = Pattern.compile(",");
+        comma.splitAsStream(commaSeparatedString).filter(s -> !s.trim().isEmpty()).forEach(stringList::add);
+
+        return Optional.of(stringList);
     }
 }

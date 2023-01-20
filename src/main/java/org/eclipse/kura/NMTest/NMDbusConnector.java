@@ -27,8 +27,11 @@ public class NMDbusConnector {
     private static final String NM_BUS_NAME = "org.freedesktop.NetworkManager";
     private static final String NM_BUS_PATH = "/org/freedesktop/NetworkManager";
     private static final String NM_SETTINGS_PATH = "/org/freedesktop/NetworkManager/Settings";
-    
-    private static final List<NMDeviceType> SUPPORTED_DEVICES = Arrays.asList(NMDeviceType.NM_DEVICE_TYPE_ETHERNET, NMDeviceType.NM_DEVICE_TYPE_WIFI);
+
+    private static final List<NMDeviceType> SUPPORTED_DEVICES = Arrays.asList(NMDeviceType.NM_DEVICE_TYPE_ETHERNET,
+            NMDeviceType.NM_DEVICE_TYPE_WIFI);
+    private static final List<KuraInterfaceStatus> SUPPORTED_STATUSES = Arrays.asList(KuraInterfaceStatus.DISABLED,
+            KuraInterfaceStatus.ENABLEDLAN, KuraInterfaceStatus.ENABLEDWAN);
 
     private static NMDbusConnector instance;
     private DBusConnection dbusConnection;
@@ -66,9 +69,7 @@ public class NMDbusConnector {
     public void checkPermissions() {
         Map<String, String> getPermissions = nm.GetPermissions();
         for (Entry<String, String> entry : getPermissions.entrySet()) {
-            if (!entry.getValue().equals("yes")) {
-                logger.warn("Missing permission for {}", entry.getKey());
-            }
+            logger.info("Permission for {}: {}", entry.getKey(), entry.getValue());
         }
     }
 
@@ -87,26 +88,42 @@ public class NMDbusConnector {
             Device device = getDeviceByIpIface(iface); // What if no device matches?
             NMDeviceType deviceType = getDeviceType(device);
 
-            logger.info("Settings iface \"{}\":{}", iface, deviceType);
-            if(!SUPPORTED_DEVICES.contains(deviceType)) {
-                logger.warn("Device type \"{}\" currently not supported", deviceType);
+            KuraInterfaceStatus ip4Status = KuraInterfaceStatus
+                    .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
+
+            if (!SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
+                logger.warn("Device type \"{}\" with status \"{}\" currently not supported", deviceType, ip4Status);
                 continue;
             }
 
+            logger.info("Settings iface \"{}\":{}", iface, deviceType);
+
             Optional<Connection> connection = getAppliedConnection(device);
 
-            Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties, connection, iface, deviceType);
-            
+            if (ip4Status.equals(KuraInterfaceStatus.DISABLED)) {
+                device.Disconnect();
+                if (connection.isPresent()) {
+                    connection.get().Delete();
+                }
+                return;
+            }
+
+            Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties,
+                    connection, iface, deviceType);
+
             logger.info("New settings: {}", newConnectionSettings);
 
-            if(connection.isPresent()) {
+            if (connection.isPresent()) {
                 logger.info("Current settings: {}", connection.get().GetSettings());
 
                 connection.get().Update(newConnectionSettings);
                 nm.ActivateConnection(new DBusPath(connection.get().getObjectPath()),
                         new DBusPath(device.getObjectPath()), new DBusPath("/"));
             } else {
-                nm.AddAndActivateConnection(newConnectionSettings, new DBusPath(device.getObjectPath()), new DBusPath("/"));
+                Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_PATH, Settings.class);
+                DBusPath connectionPath = settings.AddConnection(newConnectionSettings);
+
+                nm.ActivateConnection(connectionPath, new DBusPath(device.getObjectPath()), new DBusPath("/"));
             }
         }
     }
@@ -129,13 +146,12 @@ public class NMDbusConnector {
                     .getConnection();
             String uuid = String.valueOf(connectionSettings.get("connection").get("uuid")).replaceAll("\\[|\\]", "");
 
-            Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_PATH,
-                    Settings.class);
+            Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_PATH, Settings.class);
 
             DBusPath connectionPath = settings.GetConnectionByUuid(uuid);
             return Optional.of(dbusConnection.getRemoteObject(NM_BUS_NAME, connectionPath.getPath(), Connection.class));
-        } catch(DBusExecutionException e) {
-            logger.debug("Could not find applied connection for {}, caused by", dev.getObjectPath(), e);
+        } catch (DBusExecutionException e) {
+            logger.info("Could not find applied connection for {}, caused by", dev.getObjectPath(), e);
             return Optional.empty();
         }
     }
