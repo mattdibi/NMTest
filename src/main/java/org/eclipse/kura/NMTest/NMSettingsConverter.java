@@ -58,7 +58,8 @@ public class NMSettingsConverter {
 
         Boolean dhcpClient4Enabled = props.get(Boolean.class, "net.interface.%s.config.dhcpClient4.enabled", iface);
 
-        // Should handle net.interface.eth0.config.ip4.status here
+        KuraInterfaceStatus ip4Status = KuraInterfaceStatus
+                .fromString(props.get(String.class, "net.interface.%s.config.ip4.status", iface));
 
         if (Boolean.FALSE.equals(dhcpClient4Enabled)) {
             settings.put("method", new Variant<>("manual"));
@@ -86,11 +87,17 @@ public class NMSettingsConverter {
         } else {
             settings.put("method", new Variant<>("auto"));
 
-            Optional<List<String>> dnsServers = props.getOptStringList("net.interface.%s.config.ip4.dnsServers", iface);
-            if (dnsServers.isPresent()) {
+            if(ip4Status.equals(KuraInterfaceStatus.ENABLEDLAN)) {
                 settings.put("ignore-auto-dns", new Variant<>(true));
-                settings.put("dns-search", new Variant<>(dnsServers.get()));
+                settings.put("ignore-auto-routes", new Variant<>(true));
+            } else {
+                Optional<List<String>> dnsServers = props.getOptStringList("net.interface.%s.config.ip4.dnsServers", iface);
+                if (dnsServers.isPresent() && !ip4Status.equals(KuraInterfaceStatus.ENABLEDLAN)) {
+                    settings.put("ignore-auto-dns", new Variant<>(true));
+                    settings.put("dns-search", new Variant<>(dnsServers.get()));
+                }
             }
+            
         }
 
         return settings;
