@@ -86,7 +86,7 @@ public class NMSettingsConverter {
                 List<UInt32> uintDnsServers = new ArrayList<>();
                 for(String dnsServer : dnsServers.get()) {
                     try {
-                        UInt32 uintDnsServer = convertIp(dnsServer);
+                        UInt32 uintDnsServer = convertIp4(dnsServer);
                         uintDnsServers.add(uintDnsServer);
                     } catch (UnknownHostException e) {
                         logger.warn("Cannot convert dns server \"{}\" because: ", dnsServer, e);
@@ -157,7 +157,7 @@ public class NMSettingsConverter {
         return settings;
     }
     
-    private static UInt32 convertIp(String ipAddrString) throws UnknownHostException {
+    private static UInt32 convertIp4(String ipAddrString) throws UnknownHostException {
         InetAddress address = InetAddress.getByName(ipAddrString);
         byte[] addrBytes = address.getAddress();
 
