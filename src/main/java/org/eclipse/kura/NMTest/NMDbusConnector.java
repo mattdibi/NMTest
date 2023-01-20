@@ -36,7 +36,6 @@ public class NMDbusConnector {
     private static NMDbusConnector instance;
     private DBusConnection dbusConnection;
     private NetworkManager nm;
-    private Map<String, Object> configurationCache;
 
     private NMDbusConnector(DBusConnection dbusConnection) throws DBusException {
         this.dbusConnection = Objects.requireNonNull(dbusConnection);
@@ -85,14 +84,14 @@ public class NMDbusConnector {
         List<String> netInterfaces = properties.getStringList("net.interfaces");
 
         for (String iface : netInterfaces) {
-            Device device = getDeviceByIpIface(iface); // What if no device matches?
+            Device device = getDeviceByIpIface(iface);
             NMDeviceType deviceType = getDeviceType(device);
 
             KuraInterfaceStatus ip4Status = KuraInterfaceStatus
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
 
             if (!SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
-                logger.warn("Device type \"{}\" with status \"{}\" currently not supported", deviceType, ip4Status);
+                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported", iface, deviceType, ip4Status);
                 continue;
             }
 
