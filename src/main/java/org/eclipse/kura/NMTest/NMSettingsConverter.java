@@ -146,18 +146,13 @@ public class NMSettingsConverter {
                 propMode.toLowerCase());
         String keyMgmt = WIFI_KEYMGMT_CONVERTER.get(
                 props.get(String.class, "net.interface.%s.config.wifi.%s.securityType", iface, propMode.toLowerCase()));
-        // List<String> group = wifiCipherConverter.get(props.get(String.class,
-        // "net.interface.%s.config.wifi.%s.groupCiphers", iface, propMode.toLowerCase()));
-        // List<String> pairwise = wifiCipherConverter.get(props.get(String.class,
-        // "net.interface.%s.config.wifi.%s.pairwiseCiphers", iface, propMode.toLowerCase()));
+        List<String> group = WIFI_CIPHER_CONVERTER.get(props.get(String.class, "net.interface.%s.config.wifi.%s.groupCiphers", iface, propMode.toLowerCase()));
+        List<String> pairwise = WIFI_CIPHER_CONVERTER.get(props.get(String.class, "net.interface.%s.config.wifi.%s.pairwiseCiphers", iface, propMode.toLowerCase()));
 
-        // String plainPsk = String.valueOf(this.cryptoService.decryptAes(psk.toCharArray()));
-        settings.put("psk", new Variant<>(psk)); // Will require decryption in Kura
+        settings.put("psk", new Variant<>(psk));
         settings.put("key-mgmt", new Variant<>(keyMgmt));
-        // settings.put("group", new Variant<>(group, "as")); <- Not working: Trying to marshall to unconvertible type
-        // (from java.lang.String to ().
-        // settings.put("pairwise", new Variant<>(group, "as")); <- Not working: Trying to marshall to unconvertible
-        // type (from java.lang.String to ().
+        settings.put("group", new Variant<>(group, "as"));
+        settings.put("pairwise", new Variant<>(pairwise, "as"));
 
         return settings;
     }
