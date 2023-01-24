@@ -91,7 +91,8 @@ public class NMDbusConnector {
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
 
             if (!SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
-                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported", iface, deviceType, ip4Status);
+                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported", iface,
+                        deviceType, ip4Status);
                 continue;
             }
 
@@ -119,10 +120,8 @@ public class NMDbusConnector {
                 nm.ActivateConnection(new DBusPath(connection.get().getObjectPath()),
                         new DBusPath(device.getObjectPath()), new DBusPath("/"));
             } else {
-                Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_PATH, Settings.class);
-                DBusPath connectionPath = settings.AddConnection(newConnectionSettings);
-
-                nm.ActivateConnection(connectionPath, new DBusPath(device.getObjectPath()), new DBusPath("/"));
+                nm.AddAndActivateConnection(newConnectionSettings, new DBusPath(device.getObjectPath()),
+                        new DBusPath("/"));
             }
         }
     }
@@ -150,7 +149,7 @@ public class NMDbusConnector {
             DBusPath connectionPath = settings.GetConnectionByUuid(uuid);
             return Optional.of(dbusConnection.getRemoteObject(NM_BUS_NAME, connectionPath.getPath(), Connection.class));
         } catch (DBusExecutionException e) {
-            logger.info("Could not find applied connection for {}, caused by", dev.getObjectPath(), e);
+            logger.debug("Could not find applied connection for {}, caused by", dev.getObjectPath(), e);
             return Optional.empty();
         }
     }
