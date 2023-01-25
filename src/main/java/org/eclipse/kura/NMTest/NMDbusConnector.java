@@ -178,7 +178,7 @@ public class NMDbusConnector {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
 
-        return deviceProperties.Get("org.freedesktop.NetworkManager.Device", "IpInterface");
+        return deviceProperties.Get("org.freedesktop.NetworkManager.Device", "Interface");
     }
 
     private Device getDeviceByIpIface(String iface) throws DBusException {
