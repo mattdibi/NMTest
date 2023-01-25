@@ -85,7 +85,7 @@ public class NMDbusConnector {
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
 
             if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
-                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported (is NM maged: {})", iface,
+                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported (is NM managed: {})", iface,
                         deviceType, ip4Status, isNMManaged);
                 continue;
             }
