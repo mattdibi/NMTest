@@ -32,7 +32,7 @@ public class NMDbusConnector {
     private static final List<NMDeviceType> SUPPORTED_DEVICES = Arrays.asList(NMDeviceType.NM_DEVICE_TYPE_ETHERNET,
             NMDeviceType.NM_DEVICE_TYPE_WIFI);
     private static final List<KuraInterfaceStatus> SUPPORTED_STATUSES = Arrays.asList(KuraInterfaceStatus.DISABLED,
-            KuraInterfaceStatus.ENABLEDLAN, KuraInterfaceStatus.ENABLEDWAN);
+            KuraInterfaceStatus.ENABLEDLAN, KuraInterfaceStatus.ENABLEDWAN, KuraInterfaceStatus.UNMANAGED);
 
     private static NMDbusConnector instance;
     private DBusConnection dbusConnection;
@@ -84,8 +84,11 @@ public class NMDbusConnector {
 
             KuraInterfaceStatus ip4Status = KuraInterfaceStatus
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
+            KuraInterfaceStatus ip6Status = KuraInterfaceStatus
+                    .fromString(properties.get(String.class, "net.interface.%s.config.ip6.status", iface));
+            NMDeviceEnable deviceStatus = NMDeviceEnable.fromKuraInterfaceStatus(ip4Status, ip6Status);
 
-            if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
+            if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status) || !SUPPORTED_STATUSES.contains(ip6Status)) {
                 logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported (is NM managed: {})", iface,
                         deviceType, ip4Status, isNMManaged);
                 continue;
@@ -95,28 +98,31 @@ public class NMDbusConnector {
 
             Optional<Connection> connection = getAppliedConnection(device);
 
-            if (ip4Status.equals(KuraInterfaceStatus.DISABLED)) {
+            if (deviceStatus == NMDeviceEnable.DISABLED) {
                 device.Disconnect();
                 if (connection.isPresent()) {
                     connection.get().Delete();
                 }
                 continue;
-            }
+            } else if(deviceStatus == NMDeviceEnable.UNMANAGED) {
+                // TODO: Set it as unmanaged
+            } else { // NMDeviceEnable.ENABLED
+                // TODO: Handle if !isNMManaged -> Set it as managed
+                Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties,
+                        connection, iface, deviceType);
 
-            Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties,
-                    connection, iface, deviceType);
+                logger.info("New settings: {}", newConnectionSettings);
 
-            logger.info("New settings: {}", newConnectionSettings);
+                if (connection.isPresent()) {
+                    logger.info("Current settings: {}", connection.get().GetSettings());
 
-            if (connection.isPresent()) {
-                logger.info("Current settings: {}", connection.get().GetSettings());
-
-                connection.get().Update(newConnectionSettings);
-                nm.ActivateConnection(new DBusPath(connection.get().getObjectPath()),
-                        new DBusPath(device.getObjectPath()), new DBusPath("/"));
-            } else {
-                nm.AddAndActivateConnection(newConnectionSettings, new DBusPath(device.getObjectPath()),
-                        new DBusPath("/"));
+                    connection.get().Update(newConnectionSettings);
+                    nm.ActivateConnection(new DBusPath(connection.get().getObjectPath()),
+                            new DBusPath(device.getObjectPath()), new DBusPath("/"));
+                } else {
+                    nm.AddAndActivateConnection(newConnectionSettings, new DBusPath(device.getObjectPath()),
+                            new DBusPath("/"));
+                }
             }
         }
         

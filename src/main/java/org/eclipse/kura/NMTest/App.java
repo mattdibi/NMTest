@@ -20,6 +20,7 @@ public class App {
             config.put("net.interfaces", "eth0");
 
             config.put("net.interface.eth0.config.ip4.status", "netIPv4StatusEnabledWAN");
+            config.put("net.interface.eth0.config.ip6.status", "netIPv6StatusDisabled");
             config.put("net.interface.eth0.config.dhcpClient4.enabled", true);
 
             // config.put("net.interface.wlan0.config.ip4.status", "netIPv4StatusEnabledWAN");
