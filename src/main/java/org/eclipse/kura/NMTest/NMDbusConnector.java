@@ -42,27 +42,24 @@ public class NMDbusConnector {
         this.nm = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_BUS_PATH, NetworkManager.class);
     }
 
-    public static NMDbusConnector createInstance() throws DBusException {
-        instance = new NMDbusConnector(DBusConnection.getConnection(DBusConnection.DEFAULT_SYSTEM_BUS_ADDRESS));
+    public synchronized static NMDbusConnector getInstance() throws DBusException {
+        return getInstance(DBusConnection.getConnection(DBusConnection.DEFAULT_SYSTEM_BUS_ADDRESS));
+    }
+
+    public synchronized static NMDbusConnector getInstance(DBusConnection dbusConnection) throws DBusException {
+        if (Objects.isNull(instance)) {
+            instance = new NMDbusConnector(dbusConnection);
+        }
+
         return instance;
     }
 
-    public static NMDbusConnector createInstance(DBusConnection dbusConnection) throws DBusException {
-        instance = new NMDbusConnector(dbusConnection);
-        return instance;
+    public DBusConnection getDbusConnection() {
+        return this.dbusConnection;
     }
 
     public void closeConnection() {
         dbusConnection.disconnect();
-    }
-
-    public static NMDbusConnector getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException(
-                    "Instance not created yet. Please use NMDbusConnector.createInstance() first");
-        }
-
-        return instance;
     }
 
     public void checkPermissions() {
@@ -72,11 +69,7 @@ public class NMDbusConnector {
         }
     }
 
-    public DBusConnection getDbusConnection() {
-        return this.dbusConnection;
-    }
-
-    public void apply(Map<String, Object> networkConfiguration) throws DBusException {
+    public synchronized void apply(Map<String, Object> networkConfiguration) throws DBusException {
         logger.info("Applying configuration using NetworkManager Dbus connector");
 
         NetworkProperties properties = new NetworkProperties(networkConfiguration);
