@@ -32,7 +32,7 @@ public class App {
             config.put("net.interface.wlan0.config.wifi.master.securityType", "SECURITY_WPA2"); // -> 802-11-wireless-security.key-mgmt
             config.put("net.interface.wlan0.config.wifi.master.channel", "6"); // -> 802-11-wireless-security.channel
             config.put("net.interface.wlan0.config.wifi.master.groupCiphers", "CCMP"); // -> 802-11-wireless-security.group
-            config.put("net.interface.wlan0.config.wifi.master.pairwiseCiphers", "CCMP"); // -> 802-11-wireless-security.pairwise
+            config.put("net.interface.wlan0.config.wifi.master.pairwiseCiphers", ""); // -> 802-11-wireless-security.pairwise
             
             nm.apply(config);
 
