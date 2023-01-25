@@ -138,13 +138,11 @@ public class NMDbusConnector {
             if(!configuredInterfaces.contains(ipInterface)) {
                 logger.warn("Device \"{}\" of type \"{}\" not configured. Disabling...", ipInterface,
                         deviceType, isNMManaged);
-                
-                // TODO
-                // Optional<Connection> connection = getAppliedConnection(device);
-                // device.Disconnect();
-                // if (connection.isPresent()) {
-                //     connection.get().Delete();
-                // }
+                Optional<Connection> connection = getAppliedConnection(device);
+                device.Disconnect();
+                if (connection.isPresent()) {
+                    connection.get().Delete();
+                }
             }
         }
     }
