@@ -86,13 +86,14 @@ public class NMDbusConnector {
         for (String iface : netInterfaces) {
             Device device = getDeviceByIpIface(iface);
             NMDeviceType deviceType = getDeviceType(device);
+            Boolean isNMManaged = getDeviceManaged(device);
 
             KuraInterfaceStatus ip4Status = KuraInterfaceStatus
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
 
-            if (!SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
-                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported", iface,
-                        deviceType, ip4Status);
+            if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status)) {
+                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported (is NM maged: {})", iface,
+                        deviceType, ip4Status, isNMManaged);
                 continue;
             }
 
@@ -124,6 +125,13 @@ public class NMDbusConnector {
                         new DBusPath("/"));
             }
         }
+    }
+    
+    private Boolean getDeviceManaged(Device device) throws DBusException {
+        Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
+                Properties.class);
+        
+        return deviceProperties.Get("org.freedesktop.NetworkManager.Device", "Managed");
     }
 
     private NMDeviceType getDeviceType(Device device) throws DBusException {
