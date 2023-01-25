@@ -17,6 +17,10 @@ public class App {
             // nm.checkPermissions();
             
             Map<String, Object> config = new HashMap<>();
+            config.put("net.interfaces", "eth0");
+            config.put("net.interface.eth0.config.ip4.status", "netIPv4StatusEnabledWAN");
+            config.put("net.interface.eth0.config.dhcpClient4.enabled", true);
+
             config.put("net.interfaces", "wlan0");
             config.put("net.interface.wlan0.config.ip4.status", "netIPv4StatusEnabledWAN");
             config.put("net.interface.wlan0.config.dhcpClient4.enabled", false);

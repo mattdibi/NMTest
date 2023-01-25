@@ -1,5 +1,6 @@
 package org.eclipse.kura.NMTest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +75,9 @@ public class NMDbusConnector {
 
         NetworkProperties properties = new NetworkProperties(networkConfiguration);
 
-        List<String> netInterfaces = properties.getStringList("net.interfaces");
-
-        for (String iface : netInterfaces) {
+        // Handle configured devices
+        List<String> configuredInterfaces = properties.getStringList("net.interfaces");
+        for (String iface : configuredInterfaces) {
             Device device = getDeviceByIpIface(iface);
             NMDeviceType deviceType = getDeviceType(device);
             Boolean isNMManaged = getDeviceManaged(device);
@@ -99,7 +100,7 @@ public class NMDbusConnector {
                 if (connection.isPresent()) {
                     connection.get().Delete();
                 }
-                return;
+                continue;
             }
 
             Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties,
@@ -118,6 +119,45 @@ public class NMDbusConnector {
                         new DBusPath("/"));
             }
         }
+        
+        // Handle not configured devices
+        List<Device> availableInterfaces = getAllDevices();
+
+        for(Device device : availableInterfaces) {
+            NMDeviceType deviceType = getDeviceType(device);
+            Boolean isNMManaged = getDeviceManaged(device);
+
+            String ipInterface = getDeviceIpInterface(device);
+
+            if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType)) {
+                logger.warn("Device \"{}\" of type \"{}\" currently not supported (is NM managed: {})", ipInterface,
+                        deviceType, isNMManaged);
+                continue;
+            }
+
+            if(!configuredInterfaces.contains(ipInterface)) {
+                logger.warn("Device \"{}\" of type \"{}\" not configured. Disabling...", ipInterface,
+                        deviceType, isNMManaged);
+                
+                // TODO
+                // Optional<Connection> connection = getAppliedConnection(device);
+                // device.Disconnect();
+                // if (connection.isPresent()) {
+                //     connection.get().Delete();
+                // }
+            }
+        }
+    }
+    
+    private List<Device> getAllDevices() throws DBusException {
+        List<DBusPath> devicePaths = nm.GetAllDevices();
+        
+        List<Device> devices = new ArrayList<>();
+        for(DBusPath path : devicePaths) {
+            devices.add(dbusConnection.getRemoteObject(NM_BUS_NAME, path.getPath(), Device.class));
+        }
+        
+        return devices;
     }
     
     private Boolean getDeviceManaged(Device device) throws DBusException {
@@ -132,6 +172,13 @@ public class NMDbusConnector {
                 Properties.class);
 
         return NMDeviceType.fromUInt32(deviceProperties.Get("org.freedesktop.NetworkManager.Device", "DeviceType"));
+    }
+    
+    private String getDeviceIpInterface(Device device) throws DBusException {
+        Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
+                Properties.class);
+
+        return deviceProperties.Get("org.freedesktop.NetworkManager.Device", "IpInterface");
     }
 
     private Device getDeviceByIpIface(String iface) throws DBusException {
