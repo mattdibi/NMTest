@@ -27,6 +27,7 @@ public class NMDbusConnector {
     private static final Logger logger = LoggerFactory.getLogger(NMDbusConnector.class);
     private static final String NM_BUS_NAME = "org.freedesktop.NetworkManager";
     private static final String NM_BUS_PATH = "/org/freedesktop/NetworkManager";
+    private static final String NM_DEVICE_NAME = "org.freedesktop.NetworkManager.Device";
     private static final String NM_SETTINGS_PATH = "/org/freedesktop/NetworkManager/Settings";
 
     private static final List<NMDeviceType> SUPPORTED_DEVICES = Arrays.asList(NMDeviceType.NM_DEVICE_TYPE_ETHERNET,
@@ -175,35 +176,35 @@ public class NMDbusConnector {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
-        return NMDeviceState.fromUInt32(deviceProperties.Get("org.freedesktop.NetworkManager.Device", "State"));
+        return NMDeviceState.fromUInt32(deviceProperties.Get(NM_DEVICE_NAME, "State"));
     }
 
     private void setDeviceManaged(Device device, Boolean manage) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
-        deviceProperties.Set("org.freedesktop.NetworkManager.Device", "Managed", manage);
+        deviceProperties.Set(NM_DEVICE_NAME, "Managed", manage);
     }
 
     private Boolean isDeviceManaged(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
-        return deviceProperties.Get("org.freedesktop.NetworkManager.Device", "Managed");
+        return deviceProperties.Get(NM_DEVICE_NAME, "Managed");
     }
 
     private NMDeviceType getDeviceType(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
 
-        return NMDeviceType.fromUInt32(deviceProperties.Get("org.freedesktop.NetworkManager.Device", "DeviceType"));
+        return NMDeviceType.fromUInt32(deviceProperties.Get(NM_DEVICE_NAME, "DeviceType"));
     }
     
     private String getDeviceIpInterface(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
 
-        return deviceProperties.Get("org.freedesktop.NetworkManager.Device", "Interface");
+        return deviceProperties.Get(NM_DEVICE_NAME, "Interface");
     }
 
     private Device getDeviceByIpIface(String iface) throws DBusException {
