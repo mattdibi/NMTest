@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class NMDbusConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(NMDbusConnector.class);
+
     private static final String NM_BUS_NAME = "org.freedesktop.NetworkManager";
     private static final String NM_BUS_PATH = "/org/freedesktop/NetworkManager";
     private static final String NM_DEVICE_BUS_NAME = "org.freedesktop.NetworkManager.Device";
