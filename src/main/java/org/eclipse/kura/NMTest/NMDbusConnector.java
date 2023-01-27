@@ -100,8 +100,7 @@ public class NMDbusConnector {
             } else if(deviceStatus == NMDeviceEnable.UNMANAGED) {
                 setDeviceManaged(device, false);
             } else { // NMDeviceEnable.ENABLED
-                Boolean isNMManaged = getDeviceManaged(device);
-                if(!isNMManaged) {
+                if(!isDeviceManaged(device)) {
                     setDeviceManaged(device, true);
                 }
 
@@ -137,14 +136,13 @@ public class NMDbusConnector {
                 continue;
             }
 
-            Boolean isNMManaged = getDeviceManaged(device);
-            if(!isNMManaged) {
+            if(!isDeviceManaged(device)) {
                 setDeviceManaged(device, true);
             }
 
             if(!configuredInterfaces.contains(ipInterface)) {
                 logger.warn("Device \"{}\" of type \"{}\" not configured. Disabling...", ipInterface,
-                        deviceType, isNMManaged);
+                        deviceType);
                 disable(device);
             }
         }
@@ -187,7 +185,7 @@ public class NMDbusConnector {
         deviceProperties.Set("org.freedesktop.NetworkManager.Device", "Managed", manage);
     }
 
-    private Boolean getDeviceManaged(Device device) throws DBusException {
+    private Boolean isDeviceManaged(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
