@@ -30,7 +30,7 @@ public enum NMDeviceEnable {
             throw new IllegalArgumentException("ip4 and ip6 status should be both UNMANAGED");
         }
         
-        if(ip4status == KuraInterfaceStatus.UNKNOWN || ip4status == KuraInterfaceStatus.UNKNOWN) {
+        if(ip4status == KuraInterfaceStatus.UNKNOWN || ip6status == KuraInterfaceStatus.UNKNOWN) {
             throw new IllegalArgumentException("ip4 and ip6 status should not be UNKNOWN");                
         }
         
