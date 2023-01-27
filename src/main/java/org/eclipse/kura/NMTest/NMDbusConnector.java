@@ -27,8 +27,8 @@ public class NMDbusConnector {
     private static final Logger logger = LoggerFactory.getLogger(NMDbusConnector.class);
     private static final String NM_BUS_NAME = "org.freedesktop.NetworkManager";
     private static final String NM_BUS_PATH = "/org/freedesktop/NetworkManager";
-    private static final String NM_DEVICE_NAME = "org.freedesktop.NetworkManager.Device";
-    private static final String NM_SETTINGS_PATH = "/org/freedesktop/NetworkManager/Settings";
+    private static final String NM_DEVICE_BUS_NAME = "org.freedesktop.NetworkManager.Device";
+    private static final String NM_SETTINGS_BUS_PATH = "/org/freedesktop/NetworkManager/Settings";
 
     private static final List<NMDeviceType> SUPPORTED_DEVICES = Arrays.asList(NMDeviceType.NM_DEVICE_TYPE_ETHERNET,
             NMDeviceType.NM_DEVICE_TYPE_WIFI);
@@ -176,35 +176,35 @@ public class NMDbusConnector {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
-        return NMDeviceState.fromUInt32(deviceProperties.Get(NM_DEVICE_NAME, "State"));
+        return NMDeviceState.fromUInt32(deviceProperties.Get(NM_DEVICE_BUS_NAME, "State"));
     }
 
     private void setDeviceManaged(Device device, Boolean manage) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
-        deviceProperties.Set(NM_DEVICE_NAME, "Managed", manage);
+        deviceProperties.Set(NM_DEVICE_BUS_NAME, "Managed", manage);
     }
 
     private Boolean isDeviceManaged(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
         
-        return deviceProperties.Get(NM_DEVICE_NAME, "Managed");
+        return deviceProperties.Get(NM_DEVICE_BUS_NAME, "Managed");
     }
 
     private NMDeviceType getDeviceType(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
 
-        return NMDeviceType.fromUInt32(deviceProperties.Get(NM_DEVICE_NAME, "DeviceType"));
+        return NMDeviceType.fromUInt32(deviceProperties.Get(NM_DEVICE_BUS_NAME, "DeviceType"));
     }
     
     private String getDeviceIpInterface(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
 
-        return deviceProperties.Get(NM_DEVICE_NAME, "Interface");
+        return deviceProperties.Get(NM_DEVICE_BUS_NAME, "Interface");
     }
 
     private Device getDeviceByIpIface(String iface) throws DBusException {
@@ -218,7 +218,7 @@ public class NMDbusConnector {
                     .getConnection();
             String uuid = String.valueOf(connectionSettings.get("connection").get("uuid")).replaceAll("\\[|\\]", "");
 
-            Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_PATH, Settings.class);
+            Settings settings = this.dbusConnection.getRemoteObject(NM_BUS_NAME, NM_SETTINGS_BUS_PATH, Settings.class);
 
             DBusPath connectionPath = settings.GetConnectionByUuid(uuid);
             return Optional.of(dbusConnection.getRemoteObject(NM_BUS_NAME, connectionPath.getPath(), Connection.class));
