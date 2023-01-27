@@ -23,7 +23,8 @@ public class App {
             config.put("net.interface.eth0.config.ip6.status", "netIPv6StatusDisabled");
             config.put("net.interface.eth0.config.dhcpClient4.enabled", true);
 
-            // config.put("net.interface.wlan0.config.ip4.status", "netIPv4StatusEnabledWAN");
+            // config.put("net.interface.wlan0.config.ip4.status", "netIPv4StatusEnabledLAN");
+            // config.put("net.interface.wlan0.config.ip6.status", "netIPv6StatusDisabled");
             // config.put("net.interface.wlan0.config.dhcpClient4.enabled", false);
             // config.put("net.interface.wlan0.config.ip4.address", "192.168.1.53");
             // config.put("net.interface.wlan0.config.ip4.prefix", (short) 24);

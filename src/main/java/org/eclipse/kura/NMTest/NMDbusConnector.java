@@ -99,11 +99,7 @@ public class NMDbusConnector {
             Optional<Connection> connection = getAppliedConnection(device);
 
             if (deviceStatus == NMDeviceEnable.DISABLED) {
-                device.Disconnect();
-                if (connection.isPresent()) {
-                    connection.get().Delete();
-                }
-                continue;
+                disable(device);
             } else if(deviceStatus == NMDeviceEnable.UNMANAGED) {
                 // TODO: Set it as unmanaged
             } else { // NMDeviceEnable.ENABLED
@@ -132,7 +128,7 @@ public class NMDbusConnector {
         for(Device device : availableInterfaces) {
             NMDeviceType deviceType = getDeviceType(device);
             Boolean isNMManaged = getDeviceManaged(device);
-
+            
             String ipInterface = getDeviceIpInterface(device);
 
             if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType)) {
@@ -144,15 +140,23 @@ public class NMDbusConnector {
             if(!configuredInterfaces.contains(ipInterface)) {
                 logger.warn("Device \"{}\" of type \"{}\" not configured. Disabling...", ipInterface,
                         deviceType, isNMManaged);
-                Optional<Connection> connection = getAppliedConnection(device);
-                device.Disconnect();
-                if (connection.isPresent()) {
-                    connection.get().Delete();
-                }
+                disable(device);
             }
         }
     }
     
+    private void disable(Device device) throws DBusException {
+        NMDeviceState deviceState = getDeviceState(device);
+        if (NMDeviceState.isConnected(deviceState)) {
+            device.Disconnect();
+        }
+
+        Optional<Connection> connection = getAppliedConnection(device);
+        if (connection.isPresent()) {
+            connection.get().Delete();
+        }
+    }
+
     private List<Device> getAllDevices() throws DBusException {
         List<DBusPath> devicePaths = nm.GetAllDevices();
         
@@ -162,6 +166,13 @@ public class NMDbusConnector {
         }
         
         return devices;
+    }
+
+    private NMDeviceState getDeviceState(Device device) throws DBusException {
+        Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
+                Properties.class);
+        
+        return NMDeviceState.fromUInt32(deviceProperties.Get("org.freedesktop.NetworkManager.Device", "State"));
     }
     
     private Boolean getDeviceManaged(Device device) throws DBusException {
