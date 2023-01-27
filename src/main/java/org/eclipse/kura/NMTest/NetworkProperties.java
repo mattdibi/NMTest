@@ -26,15 +26,20 @@ public class NetworkProperties {
         if(!this.properties.containsKey(formattedKey)) {
             return Optional.empty();
         }
+        
+        Object rawValue = this.properties.get(formattedKey);
+        if(Objects.isNull(rawValue)) {
+            return Optional.empty();
+        }
 
         if(clazz == String.class) {
-            String value = String.class.cast(this.properties.get(formattedKey));
-            if(Objects.isNull(value) || value.isEmpty()) {
+            String value = String.class.cast(rawValue);
+            if(value.isEmpty()) {
                 return Optional.empty();
             }
         }
 
-        return Optional.of(clazz.cast(this.properties.get(formattedKey)));
+        return Optional.of(clazz.cast(rawValue));
     }
 
     public List<String> getStringList(String key, Object... args) {
