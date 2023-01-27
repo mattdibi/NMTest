@@ -80,7 +80,6 @@ public class NMDbusConnector {
         for (String iface : configuredInterfaces) {
             Device device = getDeviceByIpIface(iface);
             NMDeviceType deviceType = getDeviceType(device);
-            Boolean isNMManaged = getDeviceManaged(device);
 
             KuraInterfaceStatus ip4Status = KuraInterfaceStatus
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip4.status", iface));
@@ -88,22 +87,25 @@ public class NMDbusConnector {
                     .fromString(properties.get(String.class, "net.interface.%s.config.ip6.status", iface));
             NMDeviceEnable deviceStatus = NMDeviceEnable.fromKuraInterfaceStatus(ip4Status, ip6Status);
 
-            if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status) || !SUPPORTED_STATUSES.contains(ip6Status)) {
-                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\" currently not supported (is NM managed: {})", iface,
-                        deviceType, ip4Status, isNMManaged);
+            if (!SUPPORTED_DEVICES.contains(deviceType) || !SUPPORTED_STATUSES.contains(ip4Status) || !SUPPORTED_STATUSES.contains(ip6Status)) {
+                logger.warn("Device \"{}\" of type \"{}\" with status \"{}\"/\"{}\" currently not supported", iface,
+                        deviceType, ip4Status, ip6Status);
                 continue;
             }
 
             logger.info("Settings iface \"{}\":{}", iface, deviceType);
 
-            Optional<Connection> connection = getAppliedConnection(device);
-
             if (deviceStatus == NMDeviceEnable.DISABLED) {
                 disable(device);
             } else if(deviceStatus == NMDeviceEnable.UNMANAGED) {
-                // TODO: Set it as unmanaged
+                setDeviceManaged(device, false);
             } else { // NMDeviceEnable.ENABLED
-                // TODO: Handle if !isNMManaged -> Set it as managed
+                Boolean isNMManaged = getDeviceManaged(device);
+                if(!isNMManaged) {
+                    setDeviceManaged(device, true);
+                }
+
+                Optional<Connection> connection = getAppliedConnection(device);
                 Map<String, Map<String, Variant<?>>> newConnectionSettings = NMSettingsConverter.buildSettings(properties,
                         connection, iface, deviceType);
 
@@ -127,14 +129,17 @@ public class NMDbusConnector {
 
         for(Device device : availableInterfaces) {
             NMDeviceType deviceType = getDeviceType(device);
-            Boolean isNMManaged = getDeviceManaged(device);
-            
             String ipInterface = getDeviceIpInterface(device);
 
-            if (!isNMManaged || !SUPPORTED_DEVICES.contains(deviceType)) {
-                logger.warn("Device \"{}\" of type \"{}\" currently not supported (is NM managed: {})", ipInterface,
-                        deviceType, isNMManaged);
+            if (!SUPPORTED_DEVICES.contains(deviceType)) {
+                logger.warn("Device \"{}\" of type \"{}\" currently not supported", ipInterface,
+                        deviceType);
                 continue;
+            }
+
+            Boolean isNMManaged = getDeviceManaged(device);
+            if(!isNMManaged) {
+                setDeviceManaged(device, true);
             }
 
             if(!configuredInterfaces.contains(ipInterface)) {
@@ -174,7 +179,14 @@ public class NMDbusConnector {
         
         return NMDeviceState.fromUInt32(deviceProperties.Get("org.freedesktop.NetworkManager.Device", "State"));
     }
-    
+
+    private void setDeviceManaged(Device device, Boolean manage) throws DBusException {
+        Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
+                Properties.class);
+        
+        deviceProperties.Set("org.freedesktop.NetworkManager.Device", "Managed", manage);
+    }
+
     private Boolean getDeviceManaged(Device device) throws DBusException {
         Properties deviceProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(),
                 Properties.class);
