@@ -72,6 +72,15 @@ public class NMDbusConnector {
         }
     }
 
+    public void checkVersion() throws DBusException {
+        Properties nmProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, NM_BUS_PATH,
+                Properties.class);
+        
+        String nmVersion = nmProperties.Get(NM_BUS_NAME, "Version");
+        
+        logger.info("NM Version: {}", nmVersion);
+    }
+
     public synchronized void apply(Map<String, Object> networkConfiguration) throws DBusException {
         logger.info("Applying configuration using NetworkManager Dbus connector");
 
