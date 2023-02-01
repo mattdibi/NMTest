@@ -19,6 +19,7 @@ import org.freedesktop.dbus.types.Variant;
 import org.freedesktop.networkmanager.Device;
 import org.freedesktop.networkmanager.Settings;
 import org.freedesktop.networkmanager.settings.Connection;
+import org.freedesktop.networkmanager.IP4Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,40 @@ public class NMDbusConnector {
         }
 
         return instance;
+    }
+    
+    public void printInterfaceInfo(String interfaceName) throws DBusException {
+        logger.info("Interface name: {}", interfaceName);
+        
+        Device device = getDeviceByIpIface(interfaceName);
+        Properties properties = dbusConnection.getRemoteObject(NM_BUS_NAME, device.getObjectPath(), Properties.class);
+        
+        Boolean autoconnect = properties.Get(NM_DEVICE_BUS_NAME, "Autoconnect");
+        logger.info("Autoconnect {}", autoconnect);
+
+        String firmwareVersion = properties.Get(NM_DEVICE_BUS_NAME, "FirmwareVersion");
+        logger.info("FirmwareVersion {}", firmwareVersion);
+        String driver = properties.Get(NM_DEVICE_BUS_NAME, "Driver");
+        logger.info("Driver {}", driver);
+        String driverVersion = properties.Get(NM_DEVICE_BUS_NAME, "DriverVersion");
+        logger.info("DriverVersion {}", driverVersion);
+        
+        UInt32 mtu = properties.Get(NM_DEVICE_BUS_NAME, "Mtu");
+        logger.info("Mtu {}", mtu.intValue());
+
+        String hwAddress = properties.Get(NM_DEVICE_BUS_NAME, "HwAddress");
+        logger.info("HwAddress {}", hwAddress);
+        
+        /* STATO */
+        // String gateway = ip4config.Get("org.freedesktop.NetworkManager.Device", "Gateway");
+        DBusPath ip4configPath = properties.Get(NM_DEVICE_BUS_NAME, "Ip4Config");
+        Properties ip4configProperties = dbusConnection.getRemoteObject(NM_BUS_NAME, ip4configPath.getPath(), Properties.class);
+        String gateway = ip4configProperties.Get("org.freedesktop.NetworkManager.IP4Config", "Gateway");
+        logger.info("gw {}", gateway);
+
+        List<Map<String, Variant<?>>> addressData = ip4configProperties.Get("org.freedesktop.NetworkManager.IP4Config", "AddressData");
+        logger.info("addrDAta {}", addressData);
+
     }
 
     public DBusConnection getDbusConnection() {
