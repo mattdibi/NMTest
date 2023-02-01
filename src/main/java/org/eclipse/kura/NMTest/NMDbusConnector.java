@@ -88,8 +88,12 @@ public class NMDbusConnector {
         logger.info("gw {}", gateway);
 
         List<Map<String, Variant<?>>> addressData = ip4configProperties.Get("org.freedesktop.NetworkManager.IP4Config", "AddressData");
-        logger.info("addrDAta {}", addressData);
-
+        for(Map<String, Variant<?>> data : addressData) {
+            String address = data.get("address").toString();
+            // UInt32 prefix = data.get("address").;
+            logger.info("Address: {}", address);
+            // logger.info("Prefix: {}", prefix.toString());
+        }
     }
 
     public DBusConnection getDbusConnection() {
