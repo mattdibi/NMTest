@@ -17,6 +17,10 @@ public class ValueMapper<K, V> {
         }
         
         public Builder<K,V> with(K key, V value) {
+            Objects.requireNonNull(key, "Key cannot be null");
+            if(key instanceof String && key.toString().isEmpty()) {
+                throw new IllegalArgumentException("Key cannot be an empty string");
+            }
             this.builderMapper.put(key, value);
             return this;
         }
@@ -34,6 +38,7 @@ public class ValueMapper<K, V> {
         }
         
         public EnumBuilder<K,V> with(K key, V value) {
+            Objects.requireNonNull(key, "Key cannot be null");
             this.builderMapper.put(key, value);
             return this;
         }
