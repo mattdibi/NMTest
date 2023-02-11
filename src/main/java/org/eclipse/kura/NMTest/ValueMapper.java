@@ -1,5 +1,6 @@
 package org.eclipse.kura.NMTest;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -16,6 +17,23 @@ public class ValueMapper<K, V> {
         }
         
         public Builder<K,V> with(K key, V value) {
+            this.builderMapper.put(key, value);
+            return this;
+        }
+        
+        public ValueMapper<K, V> build() {
+            return new ValueMapper<>(this.builderMapper);
+        }
+    }
+
+    public static class EnumBuilder<K extends Enum<K>, V> {
+        private final EnumMap<K, V> builderMapper;
+        
+        public EnumBuilder(Class<K> enumType) {
+            this.builderMapper = new EnumMap<K, V>(enumType);
+        }
+        
+        public EnumBuilder<K,V> with(K key, V value) {
             this.builderMapper.put(key, value);
             return this;
         }
